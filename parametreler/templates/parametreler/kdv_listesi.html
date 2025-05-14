@@ -12,7 +12,6 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>KDV Adı</th>
                 <th>Oran (%)</th>
                 <th>İşlemler</th>
             </tr>
@@ -21,7 +20,6 @@
             {% for kdv in kdvler %}
             <tr>
                 <td>{{ forloop.counter }}</td>
-                <td>{{ kdv.ad }}</td>
                 <td>{{ kdv.oran }}</td>
                 <td>
                     <a href="{% url 'parametreler:kdv_duzenle' kdv.pk %}" class="btn btn-warning btn-sm">Düzenle</a>

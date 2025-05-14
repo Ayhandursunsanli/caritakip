@@ -8,6 +8,8 @@ from decimal import Decimal
 from django.http import HttpResponse
 import xlsxwriter
 from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, Border, Side, PatternFill, numbers
+from openpyxl.utils import get_column_letter
 from io import BytesIO
 from datetime import datetime
 from .models import SatinAlma
@@ -22,25 +24,70 @@ def export_to_excel(satin_almalar):
     ws = wb.active
     ws.title = "Satın Almalar"
 
-    # Başlıklar
-    ws.append([
-        'Tedarikçi', 'Ürün', 'Miktar', 'Birim', 'Fiyat', 'Tarih',
-        'Departman', 'Para Birimi', 'KDV (%)', 'Faturalar'
-    ])
+    # Stil ayarları
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill("solid", fgColor="4F81BD")
+    alignment_center = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    alignment_right = Alignment(horizontal="right", vertical="center")
+    thin_border = Border(
+        left=Side(style='thin'), right=Side(style='thin'),
+        top=Side(style='thin'), bottom=Side(style='thin')
+    )
 
-    for satinalma in satin_almalar:
-        ws.append([
-            satinalma.tedarikci.ad if satinalma.tedarikci else '',
-            satinalma.urun.ad if satinalma.urun else '',
-            satinalma.miktar,
-            satinalma.birim.ad if satinalma.birim else '',
-            satinalma.birim_fiyat,
+    headers = [
+        "Sıra No", "Tarih", "Departman", "Tedarikçi", "Ürün",
+        "Miktar", "Birim", "Fiyat", "Para Birimi", "KDV (%)",
+        "KDV Tutarı", "Net Tutar", "Toplam Tutar (KDV Dahil)", "Faturalar"
+    ]
+    ws.append(headers)
+
+    # Başlık stilini uygula
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = alignment_center
+        cell.border = thin_border
+        ws.column_dimensions[get_column_letter(col_num)].width = 18
+
+    for row_index, satinalma in enumerate(satin_almalar, start=2):
+        # Veriler
+        miktar = satinalma.miktar or 0
+        birim_fiyat = satinalma.birim_fiyat or 0
+        kdv_oran = satinalma.kdv.oran if satinalma.kdv else 0
+        net_tutar = miktar * birim_fiyat
+        kdv_tutar = net_tutar * (kdv_oran / 100)
+        toplam_tutar = net_tutar + kdv_tutar
+
+        row_data = [
+            row_index - 1,
             satinalma.tarih.strftime('%Y-%m-%d') if satinalma.tarih else '',
             satinalma.departman.ad if satinalma.departman else '',
+            satinalma.tedarikci.ad if satinalma.tedarikci else '',
+            satinalma.urun.ad if satinalma.urun else '',
+            miktar,
+            satinalma.birim.ad if satinalma.birim else '',
+            birim_fiyat,
             satinalma.para_birimi.kod if satinalma.para_birimi else '',
-            satinalma.kdv.oran if satinalma.kdv else '',
+            kdv_oran,
+            kdv_tutar,
+            net_tutar,
+            toplam_tutar,
             ', '.join([f.fatura_no for f in satinalma.faturalari.all()])
-        ])
+        ]
+
+        for col_num, value in enumerate(row_data, 1):
+            cell = ws.cell(row=row_index, column=col_num, value=value)
+            cell.border = thin_border
+
+            if col_num in [6, 8, 11, 12, 13]:  # Sayısal değerler
+                cell.number_format = '#,##0.00'
+                cell.alignment = alignment_right
+            elif col_num == 10:  # KDV %
+                cell.number_format = '0"%"'
+                cell.alignment = alignment_center
+            else:
+                cell.alignment = alignment_center
 
     # Excel dosyasını belleğe yaz
     excel_file = BytesIO()

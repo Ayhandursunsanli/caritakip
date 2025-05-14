@@ -30,6 +30,10 @@
                     <div class="mb-3">{{ form.fis|as_crispy_field }}</div>
                     <div class="mb-3">{{ form.faturaya_baglandi|as_crispy_field }}</div>
                     <div class="mt-3">
+                        <label for="toplam_tutar"><strong>Toplam Tutar:</strong></label>
+                        <input type="text" id="toplam_tutar" class="form-control" readonly>
+                    </div>
+                    <div class="mt-3">
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Kaydet
                         </button>
@@ -43,3 +47,40 @@
     </div>
 </div>
 {% endblock %} 
+
+{% block hesap_js %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const miktarInput = document.getElementById('id_miktar');
+            const birimFiyatInput = document.getElementById('id_birim_fiyat');
+            const kdvInput = document.getElementById('id_kdv');
+            const toplamTutarInput = document.getElementById('toplam_tutar');
+
+            function hesaplaToplam() {
+                const miktar = parseFloat(miktarInput.value.replace(',', '.')) || 0;
+                const birimFiyat = parseFloat(birimFiyatInput.value.replace(',', '.')) || 0;
+                
+                // KDV oranını, option'daki metin kısmından alıyoruz (yüzde değerini)
+                let kdvOraniMetin = kdvInput.options[kdvInput.selectedIndex].text; // Görünür metni alıyoruz
+                let kdvOrani = parseFloat(kdvOraniMetin.replace('%', '').trim()) || 0; // Yüzde işaretini temizliyoruz
+
+                // KDV oranını %20 yerine 0.20 olarak kullanmak için bölme işlemi
+                kdvOrani = kdvOrani / 100;
+
+                // Hesaplamayı doğru yapmak için
+                const araToplam = miktar * birimFiyat;
+                const kdvTutar = araToplam * kdvOrani;
+                const toplam = araToplam + kdvTutar;
+
+                toplamTutarInput.value = toplam.toFixed(2) + ' ₺';
+            }
+
+            miktarInput.addEventListener('input', hesaplaToplam);
+            birimFiyatInput.addEventListener('input', hesaplaToplam);
+            kdvInput.addEventListener('change', hesaplaToplam); // 'input' yerine 'change' eventini kullanıyoruz.
+
+            hesaplaToplam(); // Sayfa yüklendiğinde varsayılanları hesapla
+        });
+    </script>
+
+{% endblock %}

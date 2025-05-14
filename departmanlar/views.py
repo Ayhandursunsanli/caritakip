@@ -10,6 +10,9 @@ from tedarikciler.models import Tedarikci
 from django.db.models import Sum
 from django.http import HttpResponse
 import xlsxwriter
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, Border, Side, PatternFill, numbers
+from openpyxl.utils import get_column_letter
 from io import BytesIO
 
 def departman_listesi(request):
@@ -104,26 +107,77 @@ def departman_excel(request, pk):
     if tarih2:
         satin_almalar = satin_almalar.filter(tarih__lte=tarih2)
 
+    # Excel hazırlık
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Satın Almalar"
+
+    # Stil ayarları
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill("solid", fgColor="4F81BD")
+    alignment_center = Alignment(horizontal="center", vertical="center", wrap_text=True)
+    alignment_right = Alignment(horizontal="right", vertical="center")
+    thin_border = Border(
+        left=Side(style='thin'), right=Side(style='thin'),
+        top=Side(style='thin'), bottom=Side(style='thin')
+    )
+
+    headers = [
+        "Sıra No", "Tarih", "Departman", "Tedarikçi", "Ürün",
+        "Miktar", "Birim", "Fiyat", "Para Birimi", "KDV (%)",
+        "KDV Tutarı", "Net Tutar", "Toplam Tutar (KDV Dahil)", "Faturalar"
+    ]
+    ws.append(headers)
+
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num, value=header)
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = alignment_center
+        cell.border = thin_border
+        ws.column_dimensions[get_column_letter(col_num)].width = 18
+
+    for row_index, satinalma in enumerate(satin_almalar, start=2):
+        miktar = satinalma.miktar or 0
+        birim_fiyat = satinalma.birim_fiyat or 0
+        kdv_oran = satinalma.kdv.oran if satinalma.kdv else 0
+        net_tutar = miktar * birim_fiyat
+        kdv_tutar = net_tutar * (kdv_oran / 100)
+        toplam_tutar = net_tutar + kdv_tutar
+
+        row_data = [
+            row_index - 1,
+            satinalma.tarih.strftime('%Y-%m-%d') if satinalma.tarih else '',
+            satinalma.departman.ad if satinalma.departman else '',
+            satinalma.tedarikci.ad if satinalma.tedarikci else '',
+            satinalma.urun.ad if satinalma.urun else '',
+            miktar,
+            satinalma.birim.ad if satinalma.birim else '',
+            birim_fiyat,
+            satinalma.para_birimi.kod if satinalma.para_birimi else '',
+            kdv_oran,
+            kdv_tutar,
+            net_tutar,
+            toplam_tutar,
+            ', '.join([f.fatura_no for f in satinalma.faturalari.all()])
+        ]
+
+        for col_num, value in enumerate(row_data, 1):
+            cell = ws.cell(row=row_index, column=col_num, value=value)
+            cell.border = thin_border
+
+            if col_num in [6, 8, 11, 12, 13]:
+                cell.number_format = '#,##0.00'
+                cell.alignment = alignment_right
+            elif col_num == 10:
+                cell.number_format = '0"%"'
+                cell.alignment = alignment_center
+            else:
+                cell.alignment = alignment_center
+
+    # Dosyayı yanıtla
     output = BytesIO()
-    workbook = xlsxwriter.Workbook(output)
-    worksheet = workbook.add_worksheet()
-
-    # Başlıklar
-    headers = ['Ürün', 'Tedarikçi', 'Tarih', 'Miktar', 'Birim Fiyat', 'KDV', 'Toplam Tutar']
-    for col, header in enumerate(headers):
-        worksheet.write(0, col, header)
-
-    # Satırlar
-    for row, s in enumerate(satin_almalar, start=1):
-        worksheet.write(row, 0, s.urun.ad)
-        worksheet.write(row, 1, s.tedarikci.ad)
-        worksheet.write(row, 2, s.tarih.strftime('%d.%m.%Y'))
-        worksheet.write(row, 3, s.miktar)
-        worksheet.write(row, 4, float(s.birim_fiyat))
-        worksheet.write(row, 5, f"%{s.kdv.oran}" if s.kdv else '-')
-        worksheet.write(row, 6, float(s.toplam_tutar))
-
-    workbook.close()
+    wb.save(output)
     output.seek(0)
     response = HttpResponse(
         output.read(),
