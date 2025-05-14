@@ -7,6 +7,7 @@ from datetime import timedelta
 from decimal import Decimal
 from django.http import HttpResponse
 import xlsxwriter
+from openpyxl import Workbook
 from io import BytesIO
 from datetime import datetime
 from .models import SatinAlma
@@ -17,8 +18,35 @@ from urunler.models import Urun
 from departmanlar.models import Departman
 
 def export_to_excel(satin_almalar):
-    # ...
-    pass
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Satın Almalar"
+
+    # Başlıklar
+    ws.append([
+        'Tedarikçi', 'Ürün', 'Miktar', 'Birim', 'Fiyat', 'Tarih',
+        'Departman', 'Para Birimi', 'KDV (%)', 'Faturalar'
+    ])
+
+    for satinalma in satin_almalar:
+        ws.append([
+            satinalma.tedarikci.ad if satinalma.tedarikci else '',
+            satinalma.urun.ad if satinalma.urun else '',
+            satinalma.miktar,
+            satinalma.birim.ad if satinalma.birim else '',
+            satinalma.birim_fiyat,
+            satinalma.tarih.strftime('%Y-%m-%d') if satinalma.tarih else '',
+            satinalma.departman.ad if satinalma.departman else '',
+            satinalma.para_birimi.kod if satinalma.para_birimi else '',
+            satinalma.kdv.oran if satinalma.kdv else '',
+            ', '.join([f.fatura_no for f in satinalma.faturalari.all()])
+        ])
+
+    # Excel dosyasını belleğe yaz
+    excel_file = BytesIO()
+    wb.save(excel_file)
+    excel_file.seek(0)
+    return excel_file
 
 def satin_alma_listesi(request):
     # Filtreleme parametrelerini al

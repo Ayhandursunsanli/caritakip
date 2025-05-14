@@ -7,210 +7,219 @@
 
 {% block page_content %}
 
+
 <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-1">
-        <a href="{% url 'satin_alma:satin_alma_ekle' %}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Satın Alım Ekle
-        </a>
+    <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
+        <h2>Satın Alma Listesi</h2>
     </div>
-</div>
-
-
-
-<div class="card mb-4">
-    <div class="card-body">
-        <form method="get" class="row g-3 filter-form" id="filterForm">
-            <div class="col-md-3">
-                <label for="arama" class="form-label">Arama</label>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="arama" name="arama" 
-                        value="{{ request.GET.arama }}" placeholder="Ara...">
-
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 filter-form" id="filterForm">
+                <div class="col-md-3">
+                    <label for="arama" class="form-label">Arama</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="arama" name="arama" 
+                            value="{{ request.GET.arama }}" placeholder="Ara...">
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-2">
-                <label for="durum" class="form-label">Durum</label>
-                <select class="form-select" id="durum" name="durum">
-                    <option value="">Tümü</option>
-                    <option value="faturali" {% if request.GET.durum == 'faturali' %}selected{% endif %}>Faturalı</option>
-                    <option value="faturasiz" {% if request.GET.durum == 'faturasiz' %}selected{% endif %}>Fatura Bekliyor</option>
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label for="departman" class="form-label">Departman</label>
-                <select class="form-select" id="departman" name="departman">
-                    <option value="">Tümü</option>
-                    {% for departman in departmanlar %}
-                        <option value="{{ departman.id }}" {% if request.GET.departman == departman.id|stringformat:"i" %}selected{% endif %}>
-                            {{ departman.ad }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label for="tarih_baslangic" class="form-label">Tarih Başlangıç</label>
-                <input type="date" class="form-control" id="tarih_baslangic" 
-                       name="tarih_baslangic" value="{{ request.GET.tarih_baslangic }}">
-            </div>
-            <div class="col-md-2">
-                <label for="tarih_bitis" class="form-label">Tarih Bitiş</label>
-                <input type="date" class="form-control" id="tarih_bitis" 
-                       name="tarih_bitis" value="{{ request.GET.tarih_bitis }}">
-            </div>
-            <div class="col-12 filter-buttons-row">
-                <div class="filter-buttons">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="bi bi-funnel"></i> Filtrele
-                    </button>
-                    <button type="button" class="btn btn-secondary" onclick="clearFilters()">
-                        <i class="bi bi-x-circle"></i> Temizle
-                    </button>
+                <div class="col-md-2">
+                    <label for="durum" class="form-label">Durum</label>
+                    <select class="form-select" id="durum" name="durum">
+                        <option value="">Tümü</option>
+                        <option value="faturali" {% if request.GET.durum == 'faturali' %}selected{% endif %}>Faturalı</option>
+                        <option value="faturasiz" {% if request.GET.durum == 'faturasiz' %}selected{% endif %}>Fatura Bekliyor</option>
+                    </select>
                 </div>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="mb-3 text-end">
-    <a href="{% url 'satin_alma_listesi' %}?export=excel{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" 
-       class="btn btn-success me-2">
-        <i class="bi bi-file-excel"></i> Excel'e Aktar
-    </a>
-    
-</div>
-
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th style="width: 50px">#</th>
-                        <th>Tedarikçi</th>
-                        <th>Departman</th>
-                        <th>Sipariş Tarihi</th>
-                        <th>Net Tutar</th>
-                        <th>KDV Oranı</th>
-                        <th>KDV Tutarı</th>
-                        <th>Toplam Tutar</th>
-                        <th>Fatura</th>
-                        <th>Fiş</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in satin_alma_listesi %}
-                        {% with satinalma=item.model %}
-                        <tr {% if satinalma.faturalari.exists %}class="table-info"{% endif %}>
-                            <td>{{ forloop.counter }}</td>
-                            <td>{{ satinalma.tedarikci.ad }}</td>
-                            <td>{{ satinalma.departman.ad }}</td>
-                            <td>{{ satinalma.tarih|date:"d.m.Y" }}</td>
-                            <td>{{ item.net_tutar|floatformat:2 }} {{ satinalma.para_birimi.kod }}</td>
-                            <td>%{{ satinalma.kdv.oran }}</td>
-                            <td>{{ item.kdv_tutari|floatformat:2 }} {{ satinalma.para_birimi.kod }}</td>
-                            <td>{{ item.toplam_tutar|floatformat:2 }} {{ satinalma.para_birimi.kod }}</td>
-                            <td>
-                                {% with fatura=satinalma.faturalari.first %}
-                                    {% if fatura %}
-                                        <a href="{% url 'faturalar:fatura_detay' fatura.id %}" class="text-decoration-none">
-                                            <span class="badge bg-info">
-                                                <i class="bi bi-receipt"></i> {{ fatura.fatura_no }}
-                                            </span>
-                                        </a>
-                                    {% else %}
-                                        <span class="badge bg-secondary">
-                                            <i class="bi bi-clock"></i> Fatura Bekliyor
-                                        </span>
-                                    {% endif %}
-                                {% endwith %}
-                            </td>
-                            <td>
-                                {% if satinalma.fis %}
-                                    <a href="{{ satinalma.fis.url }}" target="_blank" class="btn btn-sm btn-outline-info" title="Fişi Görüntüle">
-                                        <i class="bi bi-file-earmark-image"></i> Görüntüle
-                                    </a>
-                                {% else %}
-                                    <span class="text-muted">-</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="btn-group">
-                                    <a href="{% url 'satin_alma:satin_alma_detay' satinalma.id %}" 
-                                       class="btn btn-sm btn-outline-primary" title="Detay">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    {% if satinalma.durum == 'beklemede' %}
-                                        <a href="{% url 'satin_alma:satin_alma_duzenle' satinalma.id %}" 
-                                           class="btn btn-sm btn-outline-secondary" title="Düzenle">
-                                            <i class="bi bi-pencil"></i>
-                                        </a>
-                                        <a href="{% url 'satin_alma:satin_alma_sil' satinalma.id %}" 
-                                           class="btn btn-sm btn-outline-danger" title="Sil"
-                                           onclick="return confirm('Bu satın almayı silmek istediğinizden emin misiniz?')">
-                                            <i class="bi bi-trash"></i>
-                                        </a>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        {% endwith %}
-                    {% empty %}
-                        <tr>
-                            <td colspan="11" class="text-center">Satın alma kaydı bulunamadı.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                <div class="col-md-2">
+                    <label for="departman" class="form-label">Departman</label>
+                    <select class="form-select" id="departman" name="departman">
+                        <option value="">Tümü</option>
+                        {% for departman in departmanlar %}
+                            <option value="{{ departman.id }}" {% if request.GET.departman == departman.id|stringformat:"i" %}selected{% endif %}>
+                                {{ departman.ad }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label for="tarih_baslangic" class="form-label">Tarih Başlangıç</label>
+                    <input type="date" class="form-control" id="tarih_baslangic" 
+                        name="tarih_baslangic" value="{{ request.GET.tarih_baslangic }}">
+                </div>
+                <div class="col-md-2">
+                    <label for="tarih_bitis" class="form-label">Tarih Bitiş</label>
+                    <input type="date" class="form-control" id="tarih_bitis" 
+                        name="tarih_bitis" value="{{ request.GET.tarih_bitis }}">
+                </div>
+                <div class="col-12 filter-buttons-row">
+                    <div class="filter-buttons">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i> Filtrele
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="clearFilters()">
+                            <i class="bi bi-x-circle"></i> Temizle
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
-</div>
 
-{% if is_paginated %}
-<nav class="mt-4">
-    <ul class="pagination justify-content-center">
-        {% if page_obj.has_previous %}
-            <li class="page-item">
-                <a class="page-link" href="?page=1{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
-                    <i class="bi bi-chevron-double-left"></i>
+    <div class="row">
+        <div class="col-12 d-flex align-items-center justify-content-between px-4">
+            <div class="">
+                <a href="{% url 'satin_alma:satin_alma_ekle' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Satın Alım Ekle
                 </a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
-                    <i class="bi bi-chevron-left"></i>
-                </a>
-            </li>
-        {% endif %}
+            </div>
 
-        {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-                <li class="page-item active">
-                    <span class="page-link">{{ num }}</span>
-                </li>
-            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <div class="text-end">
+                <a href="{% url 'satin_alma_listesi' %}?export=excel{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" 
+                class="btn btn-success me-2">
+                    <i class="bi bi-file-excel"></i> Excel'e Aktar
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px">#</th>
+                            <th>Tedarikçi</th>
+                            <th>Departman</th>
+                            <th>Sipariş Tarihi</th>
+                            <th>Net Tutar</th>
+                            <th>KDV Oranı</th>
+                            <th>KDV Tutarı</th>
+                            <th>Toplam Tutar</th>
+                            <th>Fatura</th>
+                            <th>Fiş</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in satin_alma_listesi %}
+                            {% with satinalma=item.model %}
+                            <tr {% if satinalma.faturalari.exists %}class="table-info"{% endif %}>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ satinalma.tedarikci.ad }}</td>
+                                <td>{{ satinalma.departman.ad }}</td>
+                                <td>{{ satinalma.tarih|date:"d.m.Y" }}</td>
+                                <td>{{ item.net_tutar|floatformat:2 }} {{ satinalma.para_birimi.kod }}</td>
+                                <td>%{{ satinalma.kdv.oran }}</td>
+                                <td>{{ item.kdv_tutari|floatformat:2 }} {{ satinalma.para_birimi.kod }}</td>
+                                <td>{{ item.toplam_tutar|floatformat:2 }} {{ satinalma.para_birimi.kod }}</td>
+                                <td>
+                                    {% with fatura=satinalma.faturalari.first %}
+                                        {% if fatura %}
+                                            <a href="{% url 'faturalar:fatura_detay' fatura.id %}" class="text-decoration-none">
+                                                <span class="badge bg-info btn btn-sm">
+                                                    <i class="bi bi-receipt"></i> {{ fatura.fatura_no }}
+                                                </span>
+                                            </a>
+                                        {% else %}
+                                            <span class="badge bg-secondary btn btn-sm">
+                                                <i class="bi bi-clock"></i> Fatura Bekliyor
+                                            </span>
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    {% if satinalma.fis %}
+                                        <a href="{{ satinalma.fis.url }}" target="_blank" class="btn btn-primary" title="Fişi Görüntüle">
+                                            <i class="bi bi-file-earmark-image"></i> Görüntüle
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'satin_alma:satin_alma_detay' satinalma.id %}" 
+                                        class="btn btn-warning" title="Detay">
+                                            <i class="bi bi-eye"></i> İşlemler
+                                        </a>
+                                        {% if satinalma.durum == 'beklemede' %}
+                                            <a href="{% url 'satin_alma:satin_alma_duzenle' satinalma.id %}" 
+                                            class="btn btn-sm btn-outline-secondary" title="Düzenle">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'satin_alma:satin_alma_sil' satinalma.id %}" 
+                                            class="btn btn-sm btn-outline-danger" title="Sil"
+                                            onclick="return confirm('Bu satın almayı silmek istediğinizden emin misiniz?')">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endwith %}
+                        {% empty %}
+                            <tr>
+                                <td colspan="11" class="text-center">Satın alma kaydı bulunamadı.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if is_paginated %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
-                        {{ num }}
+                    <a class="page-link" href="?page=1{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                        <i class="bi bi-chevron-left"></i>
                     </a>
                 </li>
             {% endif %}
-        {% endfor %}
 
-        {% if page_obj.has_next %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
-                    <i class="bi bi-chevron-right"></i>
-                </a>
-            </li>
-            <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
-                    <i class="bi bi-chevron-double-right"></i>
-                </a>
-            </li>
-        {% endif %}
-    </ul>
-</nav>
-{% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+
 
 {% block extra_js %}
 <script>

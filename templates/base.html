@@ -148,9 +148,9 @@
         {% endif %}
 
         {% block content %}
-        <div class="page-header">
+        {% comment %} <div class="page-header">
             <h2>{% block page_title %}{% endblock %}</h2>
-        </div>
+        </div> {% endcomment %}
         {% block page_content %}{% endblock %}
         {% endblock %}
     </div>
