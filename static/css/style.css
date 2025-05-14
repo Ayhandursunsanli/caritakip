@@ -1,0 +1,294 @@
+html, body {
+  font-family: "Segoe UI", "Roboto", Arial, sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+h1, .h1 {
+  font-size: 1.5rem;
+}
+
+h2, .h2 {
+  font-size: 1.2rem;
+}
+
+h3, .h3 {
+  font-size: 1rem;
+}
+
+h4, .h4 {
+  font-size: 0.85rem;
+}
+
+h5, .h5 {
+  font-size: 0.75rem;
+}
+
+h6, .h6 {
+  font-size: 0.7rem;
+}
+
+.navbar {
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  padding: 0.75rem 1.5rem;
+  margin-bottom: 2rem;
+}
+.navbar-brand {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1976d2;
+  font-size: 1rem;
+  padding: 0.5rem 0;
+}
+.navbar-brand img {
+  height: 32px;
+  width: 32px;
+  -o-object-fit: contain;
+     object-fit: contain;
+  margin-right: 6px;
+}
+.navbar-brand:hover {
+  color: #145ca4;
+}
+.navbar .navbar-nav .nav-item {
+  margin: 0 0.25rem;
+}
+.navbar .navbar-nav .nav-link {
+  color: #555;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+.navbar .navbar-nav .nav-link:hover {
+  color: #1976d2;
+  background-color: rgba(25, 118, 210, 0.05);
+}
+.navbar .navbar-nav .nav-link.active {
+  color: #1976d2;
+  background-color: rgba(25, 118, 210, 0.1);
+  font-weight: 600;
+}
+.navbar .navbar-toggler {
+  border: none;
+  padding: 0.5rem;
+}
+.navbar .navbar-toggler:focus {
+  box-shadow: none;
+}
+
+.page-header {
+  margin: 0 0 2rem 0;
+  padding: 0;
+  border-bottom: 2px solid #e9ecef;
+  position: relative;
+}
+.page-header h1, .page-header h2, .page-header h3, .page-header h4, .page-header h5, .page-header h6 {
+  margin: 0;
+  padding: 0 0 1rem 0;
+  font-weight: 600;
+  color: #2c3e50;
+  position: relative;
+  display: inline-block;
+}
+.page-header h1::after, .page-header h2::after, .page-header h3::after, .page-header h4::after, .page-header h5::after, .page-header h6::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #1976d2, transparent);
+}
+@media (max-width: 768px) {
+  .page-header {
+    margin-bottom: 1.5rem;
+  }
+  .page-header h1, .page-header h2, .page-header h3, .page-header h4, .page-header h5, .page-header h6 {
+    padding-bottom: 0.75rem;
+  }
+}
+
+.container {
+  padding-top: 1rem;
+}
+.container .row {
+  margin-bottom: 1.5rem;
+}
+
+.card {
+  margin-bottom: 1.5rem;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.card .card-header {
+  background-color: #fff;
+  border-bottom: 1px solid #e9ecef;
+  padding: 1rem 1.25rem;
+}
+.card .card-body {
+  padding: 1.25rem;
+}
+
+.table th {
+  background-color: #f8f9fa;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem;
+}
+.table td {
+  padding: 0.5rem;
+  vertical-align: middle;
+}
+.table-hover tbody tr:hover {
+  background-color: rgba(0, 0, 0, 0.075);
+}
+.table-hover tbody tr.fatura-bagli {
+  background-color: #e8f5e9;
+}
+.table-hover tbody tr.fatura-bagli:hover {
+  background-color: #c8e6c9;
+}
+.table-hover tbody tr:not(.fatura-bagli) {
+  background-color: transparent;
+}
+.table-hover tbody tr:not(.fatura-bagli):hover {
+  background-color: rgba(0, 0, 0, 0.075);
+}
+
+.fatura-link {
+  color: #1976d2;
+  text-decoration: none;
+}
+.fatura-link:hover {
+  text-decoration: underline;
+}
+.fatura-badge {
+  background-color: #4caf50;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.btn-group-sm .btn {
+  margin: 0 2px;
+}
+.btn-group-sm .btn:first-child {
+  margin-left: 0;
+}
+.btn-group-sm .btn:last-child {
+  margin-right: 0;
+}
+
+.alert {
+  font-size: 0.85rem;
+  padding: 0.75rem 1rem;
+}
+.alert-dismissible .btn-close {
+  padding: 0.5rem 0.5rem;
+}
+
+footer.bg-light .text-center {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.form-label {
+  font-size: 0.85rem;
+  margin-bottom: 0.2rem;
+}
+
+.form-control,
+.form-select {
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  height: calc(1.5em + 0.5rem + 2px);
+}
+
+.btn {
+  font-size: 0.85rem;
+  padding: 0.3rem 0.6rem;
+}
+.btn.btn-sm {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.4rem;
+}
+.btn.btn-lg {
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+}
+
+.pagination {
+  font-size: 0.85rem;
+}
+.pagination .page-link {
+  padding: 0.3rem 0.6rem;
+}
+
+.list-group {
+  font-size: 0.85rem;
+}
+.list-group .list-group-item {
+  padding: 0.5rem 1rem;
+}
+
+.modal .modal-title {
+  font-size: 1rem;
+}
+.modal .modal-body {
+  font-size: 0.85rem;
+}
+
+.dropdown-menu {
+  font-size: 0.85rem;
+  padding: 0.5rem 0;
+}
+.dropdown-menu .dropdown-item {
+  padding: 0.3rem 1rem;
+}
+
+.small {
+  font-size: 0.75rem !important;
+}
+
+.text-sm {
+  font-size: 0.75rem !important;
+}
+
+.text-xs {
+  font-size: 0.7rem !important;
+}
+
+.fatura-badge {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.4rem;
+}
+
+.search-loading {
+  font-size: 0.85rem;
+}
+
+.no-results {
+  font-size: 0.85rem;
+  padding: 1rem;
+}
+
+.dashboard-card .card-title {
+  font-size: 0.85rem;
+}
+.dashboard-card .stat-value {
+  font-size: 1.2rem;
+}
+.dashboard-card .stat-label {
+  font-size: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 0.8rem;
+  }
+}/*# sourceMappingURL=style.css.map */

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ urun.ad }} - Ürün Detayı{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{{ urun.ad }}</h3>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tr>
+                        <th>Oluşturulma Tarihi:</th>
+                        <td>{{ urun.created_at|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Son Güncelleme:</th>
+                        <td>{{ urun.updated_at|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                </table>
+
+                <div class="mt-3">
+                    <a href="{% url 'urunler:urun_duzenle' urun.pk %}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Düzenle
+                    </a>
+                    <a href="{% url 'urunler:urun_sil' urun.pk %}" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Sil
+                    </a>
+                    <a href="{% url 'urunler:urun_listesi' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Geri
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

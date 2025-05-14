@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Satın Alma Detay{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Satın Alma Detay</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th>Ürün:</th>
+                            <td>{{ satin_alma.urun.ad }}</td>
+                        </tr>
+                        <tr>
+                            <th>Tedarikçi:</th>
+                            <td>{{ satin_alma.tedarikci.ad }}</td>
+                        </tr>
+                        <tr>
+                            <th>Departman:</th>
+                            <td>{{ satin_alma.departman.ad }}</td>
+                        </tr>
+                        <tr>
+                            <th>Tarih:</th>
+                            <td>{{ satin_alma.tarih|date:'d.m.Y' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Miktar:</th>
+                            <td>{{ satin_alma.miktar }}</td>
+                        </tr>
+                        <tr>
+                            <th>Birim:</th>
+                            <td>{{ satin_alma.birim.ad }}</td>
+                        </tr>
+                        <tr>
+                            <th>Birim Fiyat:</th>
+                            <td>{{ satin_alma.birim_fiyat }}</td>
+                        </tr>
+                        <tr>
+                            <th>KDV:</th>
+                            <td>{{ satin_alma.kdv.oran }}%</td>
+                        </tr>
+                        <tr>
+                            <th>Para Birimi:</th>
+                            <td>{{ satin_alma.para_birimi.kod }}</td>
+                        </tr>
+                        <tr>
+                            <th>Toplam Tutar:</th>
+                            <td>{{ satin_alma.toplam_tutar|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <th>Fiş:</th>
+                            <td>
+                                {% if satin_alma.fis %}
+                                    <a href="{{ satin_alma.fis.url }}" target="_blank" class="btn btn-info btn-sm">Görüntüle</a>
+                                    <a href="{{ satin_alma.fis.url }}" download class="btn btn-secondary btn-sm">İndir</a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                                <form method="post" enctype="multipart/form-data" style="display:inline; margin-left:10px;">
+                                    {% csrf_token %}
+                                    <input type="file" name="fis" accept="application/pdf,image/*" style="display:inline-block; width:auto;" required>
+                                    <button type="submit" class="btn btn-primary btn-sm">Yükle / Değiştir</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Faturaya Bağlandı:</th>
+                            <td>{{ satin_alma.faturaya_baglandi|yesno:"Evet,Hayır" }}</td>
+                        </tr>
+                    </table>
+                    <div class="mt-3">
+                        <a href="{% url 'satin_alma:satin_alma_duzenle' satin_alma.pk %}" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Düzenle
+                        </a>
+                        <a href="{% url 'satin_alma:satin_alma_sil' satin_alma.pk %}" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Sil
+                        </a>
+                        <a href="{% url 'satin_alma:satin_alma_listesi' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Geri
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

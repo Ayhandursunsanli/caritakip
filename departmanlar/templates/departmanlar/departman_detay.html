@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ departman.ad }} - Detay{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ departman.ad }} - Satın Alınan Ürünler</h2>
+
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <label>Ürün</label>
+            <select name="urun" class="form-select">
+                <option value="">Tümü</option>
+                {% for urun in urunler %}
+                <option value="{{ urun.id }}" {% if filtre.urun == urun.id|stringformat:'s' %}selected{% endif %}>{{ urun.ad }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label>Tedarikçi</label>
+            <select name="tedarikci" class="form-select">
+                <option value="">Tümü</option>
+                {% for tedarikci in tedarikciler %}
+                <option value="{{ tedarikci.id }}" {% if filtre.tedarikci == tedarikci.id|stringformat:'s' %}selected{% endif %}>{{ tedarikci.ad }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label>Başlangıç Tarihi</label>
+            <input type="date" name="tarih1" value="{{ filtre.tarih1 }}" class="form-control" />
+        </div>
+        <div class="col-md-2">
+            <label>Bitiş Tarihi</label>
+            <input type="date" name="tarih2" value="{{ filtre.tarih2 }}" class="form-control" />
+        </div>
+        <div class="col-md-2 align-self-end">
+            <button type="submit" class="btn btn-primary w-100">Filtrele</button>
+        </div>
+    </form>
+    <div class="row mb-3">
+        <div class="col-md-4 offset-md-8 d-flex gap-2">
+            <input type="text" id="tableSearch" class="form-control" placeholder="Tabloda ara...">
+        </div>
+        <div class="col-md-4">
+            <button id="excelExportBtn" class="btn btn-success" type="button">Excel'e Aktar</button>
+        </div>
+    </div>
+
+    <div class="alert alert-info mb-4">
+        <strong>Toplam Satın Alınan Tutar:</strong> {{ toplam_tutar|floatformat:2 }}
+    </div>
+
+    <table class="table table-striped table-bordered" id="departmanTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Ürün</th>
+                <th>Tedarikçi</th>
+                <th>Tarih</th>
+                <th>Miktar</th>
+                <th>Birim Fiyat</th>
+                <th>KDV</th>
+                <th>Toplam Tutar</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for satin_alma in satin_almalar %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ satin_alma.urun.ad }}</td>
+                <td>{{ satin_alma.tedarikci.ad }}</td>
+                <td>{{ satin_alma.tarih|date:'d.m.Y' }}</td>
+                <td>{{ satin_alma.miktar }}</td>
+                <td>{{ satin_alma.birim_fiyat }}</td>
+                <td>{{ satin_alma.kdv.oran }}%</td>
+                <td>{{ satin_alma.toplam_tutar|floatformat:2 }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center">Kayıtlı satın alma yok.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('tableSearch');
+    const table = document.getElementById('departmanTable');
+    searchInput.addEventListener('keyup', function() {
+        const filter = searchInput.value.toLowerCase();
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+
+    // Excel'e Aktar (gerçek xlsx)
+    document.getElementById('excelExportBtn').addEventListener('click', function() {
+        // Formdaki filtreleri oku
+        const form = document.querySelector('form');
+        const params = new URLSearchParams(new FormData(form)).toString();
+        // Departman id'sini URL'den al
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        const departmanId = pathParts[pathParts.length - 1];
+        // Excel export URL'sini oluştur
+        let url = `/departmanlar/${departmanId}/excel/`;
+        if (params) url += `?${params}`;
+        window.location.href = url;
+    });
+});
+</script>
+{% endblock %} 

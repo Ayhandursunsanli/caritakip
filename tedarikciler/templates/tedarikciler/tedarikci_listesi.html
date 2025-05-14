@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Tedarikçiler{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
+        <h2>Tedarikçiler</h2>
+        <a href="{% url 'tedarikciler:tedarikci_ekle' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Yeni Tedarikçi
+        </a>
+    </div>
+    <div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Firma Adı</th>
+                <th>Verdiği Hizmet</th>
+                <th>Yetkili</th>
+                <th>Telefon</th>
+                <th>E-posta</th>
+                <th class="text-end">Bakiye</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tedarikci in tedarikciler %}
+            <tr>
+                <td>{{ tedarikci.ad }}</td>
+                <td>{{ tedarikci.hizmet }}</td>
+                <td>{{ tedarikci.yetkili }}</td>
+                <td>{{ tedarikci.telefon }}</td>
+                <td>{{ tedarikci.email }}</td>
+                <td class="text-end">{{ tedarikci.bakiye|default:"0.00"|floatformat:2 }}</td>
+                <td>
+                    <a href="{% url 'tedarikciler:tedarikci_detay' tedarikci.pk %}" class="btn btn-info btn-sm">Detay</a>
+                    <a href="{% url 'tedarikciler:tedarikci_duzenle' tedarikci.pk %}" class="btn btn-warning btn-sm">Düzenle</a>
+                    <a href="{% url 'tedarikciler:tedarikci_sil' tedarikci.pk %}" class="btn btn-danger btn-sm">Sil</a>
+                    <a href="{% url 'tedarikciler:tedarikci_cari' tedarikci.pk %}" class="btn btn-primary btn-sm">Cari</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">Henüz tedarikçi bulunmuyor.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+
+
+{% endblock %} 

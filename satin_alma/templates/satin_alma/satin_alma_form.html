@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+{% if form.instance.pk %}Satın Alma Düzenle{% else %}Yeni Satın Alma{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    {% if form.instance.pk %}Satın Alma Düzenle{% else %}Yeni Satın Alma{% endif %}
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    {{ form.non_field_errors }}
+                    <div class="mb-3">{{ form.tedarikci|as_crispy_field }}</div>
+                    <div class="mb-3">{{ form.urun|as_crispy_field }}</div>
+                    <div class="mb-3">{{ form.departman|as_crispy_field }}</div>
+                    <div class="mb-3">{{ form.tarih|as_crispy_field }}</div>
+                    <div class="mb-3">{{ form.miktar|as_crispy_field }}</div>
+                    <div class="mb-3">{{ form.birim|as_crispy_field }}</div>
+                    <div class="mb-3">{{ form.birim_fiyat|as_crispy_field }}</div>
+                    <div class="mb-3">{{ form.kdv|as_crispy_field }}</div>
+                    <div class="mb-3">{{ form.para_birimi|as_crispy_field }}</div>
+                    <div class="mb-3">{{ form.fis|as_crispy_field }}</div>
+                    <div class="mb-3">{{ form.faturaya_baglandi|as_crispy_field }}</div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Kaydet
+                        </button>
+                        <a href="{% url 'satin_alma:satin_alma_listesi' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> İptal
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

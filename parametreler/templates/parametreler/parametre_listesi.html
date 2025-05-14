@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Parametreler{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Parametreler</h2>
+    <div class="list-group mt-3">
+        <a href="{% url 'parametreler:kdv_listesi' %}" class="list-group-item list-group-item-action">KDV Oranları</a>
+        <a href="{% url 'parametreler:para_birimi_listesi' %}" class="list-group-item list-group-item-action">Para Birimleri</a>
+        <a href="{% url 'parametreler:birim_listesi' %}" class="list-group-item list-group-item-action">Birimler</a>
+    </div>
+</div>
+{% endblock %} 

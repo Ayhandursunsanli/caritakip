@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Faturalar{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Faturalar</h2>
+        <a href="{% url 'faturalar:fatura_ekle' %}" class="btn btn-primary">+ Fatura Ekle</a>
+    </div>
+    <form method="get" class="row g-2 mb-3" id="filterForm">
+        <div class="col-md-2">
+            <label class="form-label">Tedarikçiler</label>
+            <select name="tedarikci" class="form-select">
+                <option value="">Tüm Tedarikçiler</option>
+                {% for t in tedarikciler %}
+                <option value="{{ t.id }}" {% if filtre.tedarikci == t.id|stringformat:'s' %}selected{% endif %}>{{ t.ad }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Fatura Tarihi Başlangıç</label>
+            <input type="date" name="fatura_tarihi1" value="{{ filtre.fatura_tarihi1 }}" class="form-control" placeholder="Fatura Tarihi (Başlangıç)">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Fatura Tarihi Bitiş</label>
+            <input type="date" name="fatura_tarihi2" value="{{ filtre.fatura_tarihi2 }}" class="form-control" placeholder="Fatura Tarihi (Bitiş)">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Ödeme Tarihi Başlangıç</label>
+            <input type="date" name="odeme_tarihi1" value="{{ filtre.odeme_tarihi1 }}" class="form-control" placeholder="Ödeme Tarihi (Başlangıç)">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Ödeme Tarihi Bitiş</label>
+            <input type="date" name="odeme_tarihi2" value="{{ filtre.odeme_tarihi2 }}" class="form-control" placeholder="Ödeme Tarihi (Bitiş)">
+        </div>
+        <div class="col-md-2 d-flex gap-2 align-items-end">
+            <button type="submit" class="btn btn-info">Filtrele</button>
+            <button type="button" id="excelExportBtn" class="btn btn-success">Excel'e Aktar</button>
+        </div>
+    </form>
+    <div class="row mb-2">
+        <div class="col-md-4 ms-auto">
+            <input type="text" id="tableSearch" class="form-control" placeholder="Tabloda ara...">
+        </div>
+    </div>
+    <table class="table table-striped table-bordered" id="faturaTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Fatura No</th>
+                <th>Tedarikçi</th>
+                <th>Fatura Tarihi</th>
+                <th>Ödeme Tarihi</th>
+                <th>Tutar</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fatura in faturalar %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ fatura.fatura_no }}</td>
+                <td>{{ fatura.tedarikci.ad }}</td>
+                <td>{{ fatura.fatura_tarihi|date:'d.m.Y' }}</td>
+                <td>{{ fatura.odeme_tarihi|date:'d.m.Y' }}</td>
+                <td>{{ fatura.tutar|floatformat:2 }}</td>
+                <td>
+                    <a href="{% url 'faturalar:fatura_detay' fatura.pk %}" class="btn btn-info btn-sm">Detay</a>
+                    <a href="{% url 'faturalar:fatura_duzenle' fatura.pk %}" class="btn btn-warning btn-sm">Düzenle</a>
+                    <a href="{% url 'faturalar:fatura_sil' fatura.pk %}" class="btn btn-danger btn-sm">Sil</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">Kayıtlı fatura yok.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Canlı arama
+    const searchInput = document.getElementById('tableSearch');
+    const table = document.getElementById('faturaTable');
+    searchInput.addEventListener('keyup', function() {
+        const filter = searchInput.value.toLowerCase();
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+
+    // Excel'e Aktar
+    document.getElementById('excelExportBtn').addEventListener('click', function() {
+        const form = document.getElementById('filterForm');
+        const params = new URLSearchParams(new FormData(form)).toString();
+        let url = '{% url "faturalar:fatura_listesi_excel" %}';
+        if (params) url += '?' + params;
+        window.location.href = url;
+    });
+});
+</script>
+{% endblock %} 

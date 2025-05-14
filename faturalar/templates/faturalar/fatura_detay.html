@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Fatura Detay{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Fatura Detay</h2>
+    <table class="table table-bordered">
+        <tr>
+            <th>Fatura No</th>
+            <td>{{ fatura.fatura_no }}</td>
+        </tr>
+        <tr>
+            <th>Tedarikçi</th>
+            <td>{{ fatura.tedarikci.ad }}</td>
+        </tr>
+        <tr>
+            <th>Fatura Tarihi</th>
+            <td>{{ fatura.fatura_tarihi }}</td>
+        </tr>
+        <tr>
+            <th>Ödeme Tarihi</th>
+            <td>{{ fatura.odeme_tarihi }}</td>
+        </tr>
+        <tr>
+            <th>Tutar</th>
+            <td>{{ fatura.tutar }}</td>
+        </tr>
+        <tr>
+            <th>Fatura Dosyası</th>
+            <td>
+                {% if fatura.fatura_dosya %}
+                    <a href="{{ fatura.fatura_dosya.url }}" target="_blank" class="btn btn-info btn-sm">Görüntüle</a>
+                {% else %}
+                    Yok
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <th>Bağlı Satın Almalar</th>
+            <td>
+                <table class="table table-sm table-bordered align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Ürün</th>
+                            <th>Departman</th>
+                            <th>Birim</th>
+                            <th>Miktar</th>
+                            <th>Net Tutar</th>
+                            <th>Toplam (KDV Dahil)</th>
+                            <th>Para Birimi</th>
+                            <th>Fiş</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in fatura.satinalmalar.all %}
+                        <tr>
+                            <td>{{ s.urun.ad }}</td>
+                            <td>{{ s.departman.ad }}</td>
+                            <td>{{ s.birim.ad }}</td>
+                            <td>{{ s.miktar }}</td>
+                            <td>{{ s.net_tutar|floatformat:2 }}</td>
+                            <td>{{ s.toplam_tutar|floatformat:2 }}</td>
+                            <td>{{ s.para_birimi.kod }}</td>
+                            <td>
+                                {% if s.fis %}
+                                    <a href="{{ s.fis.url }}" target="_blank" class="btn btn-sm btn-info">Gör</a>
+                                {% else %}
+                                    <span class="text-muted">Yok</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">Bağlı satın alma yok.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+    <a href="{% url 'faturalar:fatura_listesi' %}" class="btn btn-secondary">Geri</a>
+</div>
+{% endblock %} 

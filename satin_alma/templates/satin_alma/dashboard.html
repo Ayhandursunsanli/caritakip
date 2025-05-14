@@ -1,0 +1,461 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Satın Alma Analizi{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.css">
+<style>
+.stat-card {
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+.chart-container {
+    position: relative;
+    margin: auto;
+    height: 300px;
+    width: 100%;
+}
+.table-container {
+    max-height: 300px;
+    overflow-y: auto;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Genel İstatistikler -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card stat-card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Toplam Fatura</h5>
+                    <h2 class="mb-0">{{ genel_istatistikler.toplam_fatura.sayi }}</h2>
+                    <p class="mb-0">{{ genel_istatistikler.toplam_fatura.tutar|floatformat:2 }} TL</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Aktif Tedarikçi</h5>
+                    <h2 class="mb-0">{{ genel_istatistikler.aktif_tedarikci }}</h2>
+                    <p class="mb-0">Son 30 gün: {{ genel_istatistikler.son_30_gun.satinalma.sayi }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Son 30 Gün</h5>
+                    <h2 class="mb-0">{{ genel_istatistikler.son_30_gun.fatura.sayi }}</h2>
+                    <p class="mb-0">{{ genel_istatistikler.son_30_gun.fatura.tutar|floatformat:2 }} TL</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grafikler -->
+    <div class="row mb-4">
+        <!-- Aylık Trend -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Aylık Satın Alma ve Fatura Trendi</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Tedarikçi Dağılımı -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Tedarikçi Dağılımı</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="tedarikciChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Departman Dağılımı -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Departman Dağılımı</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="departmanChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Popüler Ürünler -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">En Çok Satın Alınan Ürünler</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="urunChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tablolar -->
+    <div class="row">
+        <!-- Son Satın Almalar -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Son Satın Almalar</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Ürün</th>
+                                    <th>Tutar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for satinalma in son_satinalmalar %}
+                                <tr>
+                                    <td>{{ satinalma.tarih|date:"d.m.Y" }}</td>
+                                    <td>{{ satinalma.urun.ad }}</td>
+                                    <td>{{ satinalma.hesaplanan_toplam|floatformat:2 }} TL</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Son Faturalar -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Son Faturalar</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Tedarikçi</th>
+                                    <th>Tutar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fatura in son_faturalar %}
+                                <tr>
+                                    <td>{{ fatura.fatura_tarihi|date:"d.m.Y" }}</td>
+                                    <td>{{ fatura.tedarikci.ad }}</td>
+                                    <td>{{ fatura.tutar|floatformat:2 }} TL</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Bekleyen Ödemeler -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Bekleyen Ödemeler</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Tarih</th>
+                                    <th>Tedarikçi</th>
+                                    <th>Tutar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fatura in bekleyen_odemeler %}
+                                <tr>
+                                    <td>{{ fatura.odeme_tarihi|date:"d.m.Y" }}</td>
+                                    <td>{{ fatura.tedarikci.ad }}</td>
+                                    <td>{{ fatura.tutar|floatformat:2 }} TL</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- 1. Faturaya bağlanmamış satın alımı olan tedarikçiler -->
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <strong>Faturaya Bağlanmamış Satın Alımı Olan Tedarikçiler</strong>
+                </div>
+                <div class="card-body p-2">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th>Tedarikçi</th>
+                                <th class="text-end">Toplam (₺)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in tedarikciler_faturasiz %}
+                            <tr>
+                                <td>{{ t.ad }}</td>
+                                <td class="text-end">{{ t.toplam_faturasiz|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-center">Yok</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- 2. En çok ödeme yapılan tedarikçiler -->
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <strong>En Çok Ödeme Yapılan Tedarikçiler</strong>
+                </div>
+                <div class="card-body p-2">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Tedarikçi</th>
+                                <th class="text-end">Toplam (₺)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in tedarikciler_odeme %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ t.ad }}</td>
+                                <td class="text-end">{{ t.toplam_odeme|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center">Yok</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- 3. En çok satın alım yapılan departmanlar -->
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <strong>En Çok Satın Alım Yapılan Departmanlar</strong>
+                </div>
+                <div class="card-body p-2">
+                    <table class="table table-sm table-bordered mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Departman</th>
+                                <th class="text-end">Toplam (₺)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for d in departmanlar_toplam %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ d.ad }}</td>
+                                <td class="text-end">{{ d.toplam_satinalma|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center">Yok</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Aylık Trend Grafiği
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    const trendData = {{ aylik_trend|safe }};
+    
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: trendData.map(item => {
+                const date = new Date(item.ay);
+                return date.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+            }),
+            datasets: [{
+                label: 'Satın Alım Tutarı',
+                data: trendData.map(item => item.satinalma_tutar || 0),
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Aylık Satın Alma'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Tedarikçi Dağılımı Grafiği
+    const tedarikciCtx = document.getElementById('tedarikciChart').getContext('2d');
+    const tedarikciData = {{ tedarikci_dagilimi|safe }};
+    
+    new Chart(tedarikciCtx, {
+        type: 'pie',
+        data: {
+            labels: tedarikciData.map(item => item.tedarikci__ad || 'İsimsiz'),
+            datasets: [{
+                data: tedarikciData.map(item => item.toplam_tutar || 0),
+                backgroundColor: [
+                    'rgb(255, 99, 132)',
+                    'rgb(54, 162, 235)',
+                    'rgb(255, 206, 86)',
+                    'rgb(75, 192, 192)',
+                    'rgb(153, 102, 255)',
+                    'rgb(255, 159, 64)',
+                    'rgb(199, 199, 199)',
+                    'rgb(83, 102, 255)',
+                    'rgb(40, 159, 64)',
+                    'rgb(210, 199, 199)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Tedarikçi Dağılımı'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.raw || 0;
+                            return value.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Departman Dağılımı Grafiği
+    const departmanCtx = document.getElementById('departmanChart').getContext('2d');
+    const departmanData = {{ departman_dagilimi|safe }};
+    
+    new Chart(departmanCtx, {
+        type: 'bar',
+        data: {
+            labels: departmanData.map(item => item.departman__ad || 'İsimsiz'),
+            datasets: [{
+                label: 'Toplam Satın Alım',
+                data: departmanData.map(item => item.toplam_tutar || 0),
+                backgroundColor: 'rgb(75, 192, 192)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Departman Dağılımı'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Popüler Ürünler Grafiği
+    const urunCtx = document.getElementById('urunChart').getContext('2d');
+    const urunData = {{ populer_urunler|safe }};
+    
+    new Chart(urunCtx, {
+        type: 'bar',
+        data: {
+            labels: urunData.map(item => item.urun__ad || 'İsimsiz'),
+            datasets: [{
+                label: 'Toplam Miktar',
+                data: urunData.map(item => item.toplam_miktar || 0),
+                backgroundColor: 'rgb(153, 102, 255)'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'En Çok Satın Alınan Ürünler'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 

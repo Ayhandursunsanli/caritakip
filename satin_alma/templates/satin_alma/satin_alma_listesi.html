@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Satın Alma Listesi{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Satın Alma Listesi</h2>
+        <a href="{% url 'satin_alma:satin_alma_ekle' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Yeni Satın Alma
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Tedarikçi</th>
+                            <th>Ürün</th>
+                            <th>Miktar</th>
+                            <th>Birim Fiyat</th>
+                            <th>Toplam</th>
+                            <th>Departman</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for satinalma in satin_almalar %}
+                        <tr {% if satinalma.faturaya_baglandi %}class="fatura-bagli"{% endif %}>
+                            <td>{{ satinalma.tarih|date:"d.m.Y" }}</td>
+                            <td>{{ satinalma.tedarikci.ad }}</td>
+                            <td>{{ satinalma.urun.ad }}</td>
+                            <td>{{ satinalma.miktar }} {{ satinalma.birim.ad }}</td>
+                            <td>{{ satinalma.birim_fiyat|floatformat:2 }} {{ satinalma.para_birimi.ad }}</td>
+                            <td>{{ satinalma.hesaplanan_toplam|floatformat:2 }} {{ satinalma.para_birimi.ad }}</td>
+                            <td>{{ satinalma.departman.ad }}</td>
+                            <td>
+                                {% if satinalma.faturaya_baglandi %}
+                                    {% with fatura=satinalma.faturalari.first %}
+                                        {% if fatura and fatura.id %}
+                                        <a href="{% url 'faturalar:fatura_detay' fatura.id %}" class="fatura-link">
+                                            <span class="fatura-badge">
+                                                <i class="fas fa-file-invoice"></i> {{ fatura.fatura_no }}
+                                            </span>
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted">Fatura Bekleniyor</span>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% else %}
+                                    <span class="text-muted">Beklemede</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'satin_alma:satin_alma_detay' satinalma.id %}" class="btn btn-info" title="Detay">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'satin_alma:satin_alma_duzenle' satinalma.id %}" class="btn btn-warning" title="Düzenle">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'satin_alma:satin_alma_sil' satinalma.id %}" class="btn btn-danger" title="Sil">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center">Henüz satın alma kaydı bulunmuyor.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

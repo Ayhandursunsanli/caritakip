@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ tedarikci.ad }} - Tedarikçi Sil{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Tedarikçi Sil</h3>
+            </div>
+            <div class="card-body">
+                <p class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>{{ tedarikci.ad }}</strong> tedarikçisini silmek istediğinizden emin misiniz?
+                </p>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Evet, Sil
+                    </button>
+                    <a href="{% url 'tedarikciler:tedarikci_listesi' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> İptal
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

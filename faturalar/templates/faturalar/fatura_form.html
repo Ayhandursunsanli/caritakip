@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+{% if form.instance.pk %}Fatura Düzenle{% else %}Yeni Fatura{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    {% if form.instance.pk %}Fatura Düzenle{% else %}Yeni Fatura{% endif %}
+                </h3>
+            </div>
+            <div class="card-body">
+                {% if form.tedarikci.value %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    Tedarikçi için fatura oluşturuyorsunuz. Lütfen fatura bilgilerini ve bağlanacak satın almaları seçin.
+                </div>
+                {% endif %}
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="id_tedarikci" class="form-label">Tedarikçi</label>
+                                <input type="text" id="id_tedarikci" value="{{ form.tedarikci.initial }}" class="form-control" readonly>
+                                <input type="hidden" name="tedarikci" value="{{ form.tedarikci.value }}">
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="id_fatura_no" class="form-label">Fatura No</label>
+                                {{ form.fatura_no }}
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="id_fatura_tarihi" class="form-label">Fatura Tarihi</label>
+                                {{ form.fatura_tarihi }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="id_odeme_tarihi" class="form-label">Ödeme Tarihi</label>
+                                {{ form.odeme_tarihi }}
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="id_tutar" class="form-label">Tutar</label>
+                                {{ form.tutar }}
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="id_fatura_dosya" class="form-label">Fatura Dosyası</label>
+                                {{ form.fatura_dosya }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5>Faturaya Bağlanacak Satın Almalar</h5>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Lütfen bu faturaya bağlanacak satın almaları seçin. Seçilen satın almalar artık başka bir faturaya bağlanamaz.
+                        </div>
+                        <div class="purchase-list">
+                            <table class="table table-sm table-bordered align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Seç</th>
+                                        <th>Ürün</th>
+                                        <th>Departman</th>
+                                        <th>Birim</th>
+                                        <th>Miktar</th>
+                                        <th>Net Tutar</th>
+                                        <th>Toplam (KDV Dahil)</th>
+                                        <th>Para Birimi</th>
+                                        <th>Fiş</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for satinalma in form.fields.satinalmalar.queryset %}
+                                    <tr>
+                                        <td>
+                                            <input type="checkbox" name="satinalmalar" value="{{ satinalma.pk }}" class="satinalma-checkbox"
+                                                data-urun="{{ satinalma.urun.ad }}"
+                                                data-tutar="{{ satinalma.toplam_tutar|floatformat:2 }}"
+                                                data-departman="{{ satinalma.departman.ad }}"
+                                                data-miktar="{{ satinalma.miktar }}"
+                                                data-birim="{{ satinalma.birim.ad }}"
+                                                data-birimfiyat="{{ satinalma.birim_fiyat }}"
+                                                data-kdv="{{ satinalma.kdv.oran }}"
+                                                data-parabirimi="{{ satinalma.para_birimi.kod }}"
+                                                data-tarih="{{ satinalma.tarih|date:'d.m.Y' }}"
+                                                data-fis="{% if satinalma.fis %}{{ satinalma.fis.url }}{% endif %}">
+                                        </td>
+                                        <td>{{ satinalma.urun.ad }}</td>
+                                        <td>{{ satinalma.departman.ad }}</td>
+                                        <td>{{ satinalma.birim.ad }}</td>
+                                        <td>{{ satinalma.miktar }}</td>
+                                        <td>{{ satinalma.net_tutar|floatformat:2 }}</td>
+                                        <td>{{ satinalma.toplam_tutar|floatformat:2 }}</td>
+                                        <td>{{ satinalma.para_birimi.kod }}</td>
+                                        <td>
+                                            {% if satinalma.fis %}
+                                                <a href="{{ satinalma.fis.url }}" target="_blank" class="btn btn-sm btn-info">Gör</a>
+                                            {% else %}
+                                                <span class="text-muted">Yok</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="9" class="text-center">Seçilebilecek satın alma bulunmuyor.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="alert alert-secondary">
+                                        <strong>Tüm Satın Almaların Toplamı:</strong> 
+                                        <span id="tum-toplam">0.00</span> TL
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="alert alert-info">
+                                        <strong>Seçili Satın Almaların Toplamı:</strong> 
+                                        <span id="secili-toplam">0.00</span> TL
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Kaydet
+                        </button>
+                        <a href="{% url 'faturalar:fatura_listesi' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> İptal
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.purchase-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
+}
+.form-group {
+    margin-bottom: 1rem;
+}
+.form-label {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mevcut toplam hesaplama fonksiyonları
+    function hesaplaTumToplam() {
+        let toplam = 0;
+        document.querySelectorAll('.satinalma-checkbox').forEach(function(cb) {
+            toplam += parseFloat(cb.getAttribute('data-tutar')) || 0;
+        });
+        document.getElementById('tum-toplam').textContent = toplam.toFixed(2);
+    }
+
+    function hesaplaSeciliToplam() {
+        let toplam = 0;
+        document.querySelectorAll('.satinalma-checkbox:checked').forEach(function(cb) {
+            toplam += parseFloat(cb.getAttribute('data-tutar')) || 0;
+        });
+        document.getElementById('secili-toplam').textContent = toplam.toFixed(2);
+    }
+
+    // Checkbox'lar değiştiğinde toplamları güncelle
+    document.querySelectorAll('.satinalma-checkbox').forEach(function(cb) {
+        cb.addEventListener('change', function() {
+            hesaplaSeciliToplam();
+        });
+    });
+
+    // Sayfa yüklendiğinde toplamları hesapla
+    hesaplaTumToplam();
+    hesaplaSeciliToplam();
+});
+</script>
+{% endblock %} 
