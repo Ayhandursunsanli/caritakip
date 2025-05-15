@@ -1,4 +1,4 @@
-#!c:\users\ayhan\desktop\satinalma\satinalma\venv\scripts\python.exe
+#!C:\Users\DELL\Documents\GitHub\caritakip\venv\Scripts\python.exe
 
 ##############################################################################
 #
