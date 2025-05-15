@@ -1,4 +1,4 @@
-#!C:\Users\DELL\Documents\GitHub\caritakip\venv\Scripts\python.exe
+#!c:\users\ayhan\documents\github\caritakip\venv\scripts\python.exe
 
 ##############################################################################
 #
