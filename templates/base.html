@@ -10,7 +10,12 @@
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
     <style>
 
-        .container{
+        /* .container{
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }  */
+        .wrappernil{
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -145,7 +150,7 @@
         </div>
     </nav>
 
-    <div class="container-fluid p-2">
+    <div class="container-fluid wrappernil">
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">

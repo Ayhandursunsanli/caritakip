@@ -8,7 +8,7 @@
 {% block page_content %}
 
 
-<div class="container">
+<div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-3 mt-4">
         <h2>Satın Alma Listesi</h2>
     </div>
@@ -92,9 +92,13 @@
                     <thead>
                         <tr>
                             <th style="width: 50px">#</th>
+                            <th>Sipariş Tarihi</th>
                             <th>Tedarikçi</th>
                             <th>Departman</th>
-                            <th>Sipariş Tarihi</th>
+                            <th>Ürün</th>
+                            <th>Miktar</th>
+                            <th>Birim</th>
+                            <th>Birim Fiyatı</th>
                             <th>Net Tutar</th>
                             <th>KDV Oranı</th>
                             <th>KDV Tutarı</th>
@@ -109,9 +113,13 @@
                             {% with satinalma=item.model %}
                             <tr {% if satinalma.faturalari.exists %}class="table-info"{% endif %}>
                                 <td>{{ forloop.counter }}</td>
+                                <td>{{ satinalma.tarih|date:"d.m.Y" }}</td>
                                 <td>{{ satinalma.tedarikci.ad }}</td>
                                 <td>{{ satinalma.departman.ad }}</td>
-                                <td>{{ satinalma.tarih|date:"d.m.Y" }}</td>
+                                <td>{{ satinalma.urun.ad }}</td>
+                                <td>{{ satinalma.miktar }}</td>
+                                <td>{{ satinalma.birim }}</td>
+                                <td>{{ satinalma.birim_fiyat }}</td>
                                 <td>{{ item.net_tutar|floatformat:2 }} {{ satinalma.para_birimi.kod }}</td>
                                 <td>%{{ satinalma.kdv.oran }}</td>
                                 <td>{{ item.kdv_tutari|floatformat:2 }} {{ satinalma.para_birimi.kod }}</td>

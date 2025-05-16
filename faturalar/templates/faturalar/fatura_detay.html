@@ -3,8 +3,10 @@
 {% block title %}Fatura Detay{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Fatura Detay</h2>
+<div class="container wrappernil mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 ">
+        <h2>Fatura Detay</h2>
+    </div>
     <table class="table table-bordered">
         <tr>
             <th>Fatura No</th>
@@ -80,6 +82,6 @@
             </td>
         </tr>
     </table>
-    <a href="{% url 'faturalar:fatura_listesi' %}" class="btn btn-secondary">Geri</a>
+    <a href="{% url 'faturalar:fatura_listesi' %}" class="btn btn-secondary" style="width: 50px;">Geri</a>
 </div>
 {% endblock %} 

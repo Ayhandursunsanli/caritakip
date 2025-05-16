@@ -3,10 +3,10 @@
 {% block title %}Faturalar{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container wrappernil mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>Faturalar</h2>
-        <a href="{% url 'faturalar:fatura_ekle' %}" class="btn btn-primary">+ Fatura Ekle</a>
+        {% comment %} <a href="{% url 'faturalar:fatura_ekle' %}" class="btn btn-primary">+ Fatura Ekle</a> {% endcomment %}
     </div>
     <form method="get" class="row g-2 mb-3" id="filterForm">
         <div class="col-md-2">
