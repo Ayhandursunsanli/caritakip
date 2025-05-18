@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('tedarikciler', '0001_initial'),
-        ('satin_alma', '0001_initial'),
+        ('satinalma', '0001_initial'),
     ]
 
     operations = [
@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
                 ('dosya', models.FileField(blank=True, null=True, upload_to='faturalar/', verbose_name='Fatura Dosyası')),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
-                ('satin_almalar', models.ManyToManyField(related_name='faturalar', to='satin_alma.satinalma', verbose_name='Satın Almalar')),
+                ('satin_almalar', models.ManyToManyField(related_name='faturalar', to='satinalma.satinalma', verbose_name='Satın Almalar')),
                 ('tedarikci', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='tedarikciler.tedarikci', verbose_name='Tedarikçi')),
             ],
             options={

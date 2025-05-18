@@ -2,14 +2,18 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from .models import KDV, ParaBirimi, Birim
 from .forms import KDVForm, ParaBirimiForm, BirimForm
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def parametre_listesi(request):
     return render(request, 'parametreler/parametre_listesi.html')
 
+@login_required
 def kdv_listesi(request):
     kdvler = KDV.objects.all()
     return render(request, 'parametreler/kdv_listesi.html', {'kdvler': kdvler})
 
+@login_required
 def kdv_ekle(request):
     if request.method == "POST":
         form = KDVForm(request.POST)
@@ -21,6 +25,7 @@ def kdv_ekle(request):
         form = KDVForm()
     return render(request, 'parametreler/kdv_form.html', {'form': form})
 
+@login_required
 def kdv_duzenle(request, pk):
     kdv = get_object_or_404(KDV, pk=pk)
     if request.method == "POST":
@@ -33,6 +38,7 @@ def kdv_duzenle(request, pk):
         form = KDVForm(instance=kdv)
     return render(request, 'parametreler/kdv_form.html', {'form': form})
 
+@login_required
 def kdv_sil(request, pk):
     kdv = get_object_or_404(KDV, pk=pk)
     if request.method == "POST":
@@ -41,10 +47,12 @@ def kdv_sil(request, pk):
         return redirect('parametreler:kdv_listesi')
     return render(request, 'parametreler/kdv_sil.html', {'kdv': kdv})
 
+@login_required
 def para_birimi_listesi(request):
     para_birimleri = ParaBirimi.objects.all()
     return render(request, 'parametreler/para_birimi_listesi.html', {'para_birimleri': para_birimleri})
 
+@login_required
 def para_birimi_ekle(request):
     if request.method == "POST":
         form = ParaBirimiForm(request.POST)
@@ -56,6 +64,7 @@ def para_birimi_ekle(request):
         form = ParaBirimiForm()
     return render(request, 'parametreler/para_birimi_form.html', {'form': form})
 
+@login_required
 def para_birimi_duzenle(request, pk):
     para_birimi = get_object_or_404(ParaBirimi, pk=pk)
     if request.method == "POST":
@@ -68,6 +77,7 @@ def para_birimi_duzenle(request, pk):
         form = ParaBirimiForm(instance=para_birimi)
     return render(request, 'parametreler/para_birimi_form.html', {'form': form})
 
+@login_required
 def para_birimi_sil(request, pk):
     para_birimi = get_object_or_404(ParaBirimi, pk=pk)
     if request.method == "POST":
@@ -76,10 +86,12 @@ def para_birimi_sil(request, pk):
         return redirect('parametreler:para_birimi_listesi')
     return render(request, 'parametreler/para_birimi_sil.html', {'para_birimi': para_birimi})
 
+@login_required
 def birim_listesi(request):
     birimler = Birim.objects.all()
     return render(request, 'parametreler/birim_listesi.html', {'birimler': birimler})
 
+@login_required
 def birim_ekle(request):
     if request.method == "POST":
         form = BirimForm(request.POST)
@@ -91,6 +103,7 @@ def birim_ekle(request):
         form = BirimForm()
     return render(request, 'parametreler/birim_form.html', {'form': form})
 
+@login_required
 def birim_duzenle(request, pk):
     birim = get_object_or_404(Birim, pk=pk)
     if request.method == "POST":
@@ -103,6 +116,7 @@ def birim_duzenle(request, pk):
         form = BirimForm(instance=birim)
     return render(request, 'parametreler/birim_form.html', {'form': form})
 
+@login_required
 def birim_sil(request, pk):
     birim = get_object_or_404(Birim, pk=pk)
     if request.method == "POST":

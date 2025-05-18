@@ -7,7 +7,9 @@ from django.http import HttpResponse
 import xlsxwriter
 from io import BytesIO
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def fatura_listesi(request):
     faturalar = Fatura.objects.all()
     tedarikci_id = request.GET.get('tedarikci')
@@ -43,10 +45,12 @@ def fatura_listesi(request):
     }
     return render(request, 'faturalar/fatura_listesi.html', context)
 
+@login_required
 def fatura_detay(request, pk):
     fatura = get_object_or_404(Fatura, pk=pk)
     return render(request, 'faturalar/fatura_detay.html', {'fatura': fatura})
 
+@login_required
 def fatura_ekle(request):
     tedarikci_id = request.GET.get('tedarikci')
     tedarikci = None
@@ -70,6 +74,7 @@ def fatura_ekle(request):
             form.fields['tedarikci'].widget.attrs['value'] = str(tedarikci)
     return render(request, 'faturalar/fatura_form.html', {'form': form})
 
+@login_required
 def fatura_duzenle(request, pk):
     fatura = get_object_or_404(Fatura, pk=pk)
     if request.method == "POST":
@@ -82,6 +87,7 @@ def fatura_duzenle(request, pk):
         form = FaturaForm(instance=fatura)
     return render(request, 'faturalar/fatura_form.html', {'form': form})
 
+@login_required
 def fatura_sil(request, pk):
     fatura = get_object_or_404(Fatura, pk=pk)
     if request.method == "POST":

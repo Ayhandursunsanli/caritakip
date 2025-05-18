@@ -34,6 +34,7 @@
                 <td>{{ tedarikci.telefon }}</td>
                 <td>{{ tedarikci.email }}</td>
                 <td class="text-end">{{ tedarikci.bakiye|default:"0.00"|floatformat:2 }}</td>
+                
                 <td>
                     <a href="{% url 'tedarikciler:tedarikci_detay' tedarikci.pk %}" class="btn btn-info btn-sm">Detay</a>
                     <a href="{% url 'tedarikciler:tedarikci_duzenle' tedarikci.pk %}" class="btn btn-warning btn-sm">Düzenle</a>

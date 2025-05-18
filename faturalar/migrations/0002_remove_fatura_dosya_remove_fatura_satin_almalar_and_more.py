@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('tedarikciler', '0001_initial'),
-        ('satin_alma', '0001_initial'),
+        ('satinalma', '0001_initial'),
         ('faturalar', '0001_initial'),
     ]
 
@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='fatura',
             name='satinalmalar',
-            field=models.ManyToManyField(blank=True, related_name='faturalari', to='satin_alma.satinalma', verbose_name='Satın Almalar'),
+            field=models.ManyToManyField(blank=True, related_name='faturalari', to='satinalma.satinalma', verbose_name='Satın Almalar'),
         ),
         migrations.AlterField(
             model_name='fatura',

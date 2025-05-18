@@ -73,6 +73,8 @@
         }
 
         footer{
+            margin-top: 50px;
+
             background: #000000;
             background: linear-gradient(162deg, rgba(0, 0, 0, 1) 40%, rgba(142, 106, 77, 1) 81%, rgba(142, 106, 77, 1) 100%);
             color: #ffffff;
@@ -93,8 +95,8 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container-fluid pt-3 py-3 ">
-            <a class="navbar-brand" href="{% url 'dashboard' %}">
+        <div class="container pt-3 py-3 ">
+            <a class="navbar-brand" href="{% url 'satinalma:dashboard' %}">
                 <img src="{% static 'img/logo.png' %}" alt="Logo" class="w-100">
                 Cari Takip Sistemi
             </a>
@@ -105,13 +107,13 @@
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
-                           href="{% url 'dashboard' %}">
+                           href="{% url 'satinalma:dashboard' %}">
                             <i class="bi bi-speedometer2"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'satin_alma_listesi' %}active{% endif %}" 
-                           href="{% url 'satin_alma_listesi' %}">
+                           href="{% url 'satinalma:satin_alma_listesi' %}">
                             <i class="bi bi-cart"></i> Satın Almalar
                         </a>
                     </li>
@@ -127,24 +129,45 @@
                             <i class="bi bi-building"></i> Tedarikçiler
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'departman_listesi' %}active{% endif %}" 
-                           href="{% url 'departmanlar:departman_listesi' %}">
-                            <i class="bi bi-diagram-3"></i> Departmanlar
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="yonetDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-gear"></i> Yönet
                         </a>
+                        <ul class="dropdown-menu" aria-labelledby="yonetDropdown">
+                            <li>
+                                <a class="dropdown-item {% if request.resolver_match.url_name == 'departman_listesi' %}active{% endif %}" 
+                                   href="{% url 'departmanlar:departman_listesi' %}">
+                                    <i class="bi bi-diagram-3"></i> Departmanlar
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {% if request.resolver_match.url_name == 'urun_listesi' %}active{% endif %}" 
+                                   href="{% url 'urunler:urun_listesi' %}">
+                                    <i class="bi bi-box-seam"></i> Ürünler
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item {% if request.resolver_match.url_name == 'parametre_listesi' %}active{% endif %}" 
+                                   href="{% url 'parametreler:parametre_listesi' %}">
+                                    <i class="bi bi-sliders"></i> Parametreler
+                                </a>
+                            </li>
+                        </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'urun_listesi' %}active{% endif %}" 
-                           href="{% url 'urunler:urun_listesi' %}">
-                            <i class="bi bi-box-seam"></i> Ürünler
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown ms-auto">
+                        <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i> {{ request.user.username }}
                         </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'logout' %}">
+                                    <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                                </a>
+                            </li>
+                        </ul>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'parametre_listesi' %}active{% endif %}" 
-                           href="{% url 'parametreler:parametre_listesi' %}">
-                            <i class="bi bi-sliders"></i> Parametreler
-                        </a>
-                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

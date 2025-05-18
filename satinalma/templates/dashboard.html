@@ -125,7 +125,7 @@
     <!-- Tablolar -->
     <div class="row">
         <!-- Son Satın Almalar -->
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
                     <h4 class="card-title mb-0">Son Satın Almalar</h4>
@@ -155,7 +155,7 @@
             </div>
         </div>
         <!-- Son Faturalar -->
-        <div class="col-md-4">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
                     <h4 class="card-title mb-0">Son Faturalar</h4>
@@ -174,36 +174,6 @@
                                 {% for fatura in son_faturalar %}
                                 <tr>
                                     <td>{{ fatura.fatura_tarihi|date:"d.m.Y" }}</td>
-                                    <td>{{ fatura.tedarikci.ad }}</td>
-                                    <td>{{ fatura.tutar|floatformat:2 }} TL</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Bekleyen Ödemeler -->
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="card-title mb-0">Bekleyen Ödemeler</h4>
-                </div>
-                <div class="card-body">
-                    <div class="table-container">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Tarih</th>
-                                    <th>Tedarikçi</th>
-                                    <th>Tutar</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for fatura in bekleyen_odemeler %}
-                                <tr>
-                                    <td>{{ fatura.odeme_tarihi|date:"d.m.Y" }}</td>
                                     <td>{{ fatura.tedarikci.ad }}</td>
                                     <td>{{ fatura.tutar|floatformat:2 }} TL</td>
                                 </tr>
@@ -313,152 +283,182 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Veri kontrolü ve hata yakalama fonksiyonu
+    function parseChartData(data) {
+        try {
+            const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+            // None değerlerini null'a çevir
+            return JSON.parse(JSON.stringify(parsedData, (key, value) => 
+                value === 'None' ? null : value
+            ));
+        } catch (e) {
+            console.error('Veri ayrıştırma hatası:', e);
+            return [];
+        }
+    }
+
     // Aylık Trend Grafiği
-    const trendCtx = document.getElementById('trendChart').getContext('2d');
-    const trendData = {{ aylik_trend|safe }};
-    
-    new Chart(trendCtx, {
-        type: 'line',
-        data: {
-            labels: trendData.map(item => {
-                const date = new Date(item.ay);
-                return date.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
-            }),
-            datasets: [{
-                label: 'Satın Alım Tutarı',
-                data: trendData.map(item => item.satinalma_tutar || 0),
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Aylık Satın Alma'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return value.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+    const trendCtx = document.getElementById('trendChart');
+    if (trendCtx) {
+        const trendData = parseChartData({{ aylik_trend|safe }});
+        if (trendData && trendData.length > 0) {
+            new Chart(trendCtx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: trendData.map(item => {
+                        const date = new Date(item.ay);
+                        return date.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' });
+                    }),
+                    datasets: [{
+                        label: 'Satın Alım Tutarı',
+                        data: trendData.map(item => item.satinalma_tutar || 0),
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Aylık Satın Alma'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+                                }
+                            }
                         }
                     }
                 }
-            }
+            });
         }
-    });
+    }
 
     // Tedarikçi Dağılımı Grafiği
-    const tedarikciCtx = document.getElementById('tedarikciChart').getContext('2d');
-    const tedarikciData = {{ tedarikci_dagilimi|safe }};
-    
-    new Chart(tedarikciCtx, {
-        type: 'pie',
-        data: {
-            labels: tedarikciData.map(item => item.tedarikci__ad || 'İsimsiz'),
-            datasets: [{
-                data: tedarikciData.map(item => item.toplam_tutar || 0),
-                backgroundColor: [
-                    'rgb(255, 99, 132)',
-                    'rgb(54, 162, 235)',
-                    'rgb(255, 206, 86)',
-                    'rgb(75, 192, 192)',
-                    'rgb(153, 102, 255)',
-                    'rgb(255, 159, 64)',
-                    'rgb(199, 199, 199)',
-                    'rgb(83, 102, 255)',
-                    'rgb(40, 159, 64)',
-                    'rgb(210, 199, 199)'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Tedarikçi Dağılımı'
+    const tedarikciCtx = document.getElementById('tedarikciChart');
+    if (tedarikciCtx) {
+        const tedarikciData = parseChartData({{ tedarikci_dagilimi|safe }});
+        if (tedarikciData && tedarikciData.length > 0) {
+            new Chart(tedarikciCtx.getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: tedarikciData.map(item => item.tedarikci__ad || 'İsimsiz'),
+                    datasets: [{
+                        data: tedarikciData.map(item => item.toplam_tutar || 0),
+                        backgroundColor: [
+                            'rgb(255, 99, 132)',
+                            'rgb(54, 162, 235)',
+                            'rgb(255, 206, 86)',
+                            'rgb(75, 192, 192)',
+                            'rgb(153, 102, 255)',
+                            'rgb(255, 159, 64)',
+                            'rgb(199, 199, 199)',
+                            'rgb(83, 102, 255)',
+                            'rgb(40, 159, 64)',
+                            'rgb(210, 199, 199)'
+                        ]
+                    }]
                 },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const value = context.raw || 0;
-                            return value.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Tedarikçi Dağılımı'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw || 0;
+                                    return value.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+                                }
+                            }
                         }
                     }
                 }
-            }
+            });
         }
-    });
+    }
 
     // Departman Dağılımı Grafiği
-    const departmanCtx = document.getElementById('departmanChart').getContext('2d');
-    const departmanData = {{ departman_dagilimi|safe }};
-    
-    new Chart(departmanCtx, {
-        type: 'bar',
-        data: {
-            labels: departmanData.map(item => item.departman__ad || 'İsimsiz'),
-            datasets: [{
-                label: 'Toplam Satın Alım',
-                data: departmanData.map(item => item.toplam_tutar || 0),
-                backgroundColor: 'rgb(75, 192, 192)'
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Departman Dağılımı'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return value.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+    const departmanCtx = document.getElementById('departmanChart');
+    if (departmanCtx) {
+        const departmanData = parseChartData({{ departman_dagilimi|safe }});
+        if (departmanData && departmanData.length > 0) {
+            new Chart(departmanCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: departmanData.map(item => item.departman__ad || 'İsimsiz'),
+                    datasets: [{
+                        label: 'Toplam Satın Alım',
+                        data: departmanData.map(item => item.toplam_tutar || 0),
+                        backgroundColor: 'rgb(75, 192, 192)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Departman Dağılımı'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+                                }
+                            }
                         }
                     }
                 }
-            }
+            });
         }
-    });
+    }
 
     // Popüler Ürünler Grafiği
-    const urunCtx = document.getElementById('urunChart').getContext('2d');
-    const urunData = {{ populer_urunler|safe }};
-    
-    new Chart(urunCtx, {
-        type: 'bar',
-        data: {
-            labels: urunData.map(item => item.urun__ad || 'İsimsiz'),
-            datasets: [{
-                label: 'Toplam Miktar',
-                data: urunData.map(item => item.toplam_miktar || 0),
-                backgroundColor: 'rgb(153, 102, 255)'
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'En Çok Satın Alınan Ürünler'
+    const urunCtx = document.getElementById('urunChart');
+    if (urunCtx) {
+        const urunData = parseChartData({{ populer_urunler|safe }});
+        if (urunData && urunData.length > 0) {
+            new Chart(urunCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: urunData.map(item => item.urun__ad || 'İsimsiz'),
+                    datasets: [{
+                        label: 'Toplam Miktar',
+                        data: urunData.map(item => item.toplam_miktar || 0),
+                        backgroundColor: 'rgb(153, 102, 255)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'En Çok Satın Alınan Ürünler'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
                 }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
+            });
         }
-    });
+    }
 });
 </script>
 {% endblock %} 

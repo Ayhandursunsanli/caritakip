@@ -1,6 +1,6 @@
 from django.db import models
 from tedarikciler.models import Tedarikci
-from satin_alma.models import SatinAlma
+from satinalma.models import SatinAlma
 
 class Fatura(models.Model):
     tedarikci = models.ForeignKey(Tedarikci, on_delete=models.CASCADE, related_name='faturalari')
@@ -9,7 +9,7 @@ class Fatura(models.Model):
     odeme_tarihi = models.DateField(verbose_name="Ödeme Tarihi")
     tutar = models.DecimalField(max_digits=12, decimal_places=2, verbose_name="Tutar")
     fatura_dosya = models.FileField(upload_to='faturalar/', blank=True, null=True, verbose_name="Fatura Dosyası")
-    satinalmalar = models.ManyToManyField('satin_alma.SatinAlma', related_name='faturalari', blank=True, verbose_name="Satın Almalar")
+    satinalmalar = models.ManyToManyField('satinalma.SatinAlma', related_name='faturalari', blank=True, verbose_name="Satın Almalar")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

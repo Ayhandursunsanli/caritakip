@@ -4,7 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from .models import Departman
 from .forms import DepartmanForm
-from satin_alma.models import SatinAlma
+from satinalma.models import SatinAlma
 from urunler.models import Urun
 from tedarikciler.models import Tedarikci
 from django.db.models import Sum
@@ -14,11 +14,14 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill, numbers
 from openpyxl.utils import get_column_letter
 from io import BytesIO
+from django.contrib.auth.decorators import login_required
 
+@login_required
 def departman_listesi(request):
     departmanlar = Departman.objects.all()
     return render(request, 'departmanlar/departman_listesi.html', {'departmanlar': departmanlar})
 
+@login_required
 def departman_detay(request, pk):
     departman = get_object_or_404(Departman, pk=pk)
     satin_almalar = SatinAlma.objects.filter(departman=departman)
@@ -57,29 +60,58 @@ def departman_detay(request, pk):
         }
     })
 
+@login_required
 def departman_ekle(request):
     if request.method == "POST":
         form = DepartmanForm(request.POST)
         if form.is_valid():
+            # Aynı isimde departman var mı kontrol et
+            departman_adi = form.cleaned_data['ad']
+            if Departman.objects.filter(ad__iexact=departman_adi).exists():
+                messages.error(request, 'Bu isimde bir departman zaten mevcut!')
+                return render(request, 'departmanlar/departman_form.html', {
+                    'form': form,
+                    'mevcut_departmanlar': Departman.objects.all().order_by('ad')
+                })
+            
             form.save()
             messages.success(request, 'Departman başarıyla eklendi.')
             return redirect('departmanlar:departman_listesi')
     else:
         form = DepartmanForm()
-    return render(request, 'departmanlar/departman_form.html', {'form': form})
+    
+    return render(request, 'departmanlar/departman_form.html', {
+        'form': form,
+        'mevcut_departmanlar': Departman.objects.all().order_by('ad')
+    })
 
+@login_required
 def departman_duzenle(request, pk):
     departman = get_object_or_404(Departman, pk=pk)
     if request.method == "POST":
         form = DepartmanForm(request.POST, instance=departman)
         if form.is_valid():
+            # Aynı isimde başka bir departman var mı kontrol et
+            departman_adi = form.cleaned_data['ad']
+            if Departman.objects.filter(ad__iexact=departman_adi).exclude(pk=pk).exists():
+                messages.error(request, 'Bu isimde başka bir departman zaten mevcut!')
+                return render(request, 'departmanlar/departman_form.html', {
+                    'form': form,
+                    'mevcut_departmanlar': Departman.objects.all().order_by('ad')
+                })
+            
             form.save()
             messages.success(request, 'Departman başarıyla güncellendi.')
             return redirect('departmanlar:departman_listesi')
     else:
         form = DepartmanForm(instance=departman)
-    return render(request, 'departmanlar/departman_form.html', {'form': form})
+    
+    return render(request, 'departmanlar/departman_form.html', {
+        'form': form,
+        'mevcut_departmanlar': Departman.objects.all().order_by('ad')
+    })
 
+@login_required
 def departman_sil(request, pk):
     departman = get_object_or_404(Departman, pk=pk)
     if request.method == "POST":

@@ -12,12 +12,14 @@ from openpyxl.styles import Font, Alignment, Border, Side, PatternFill, numbers
 from openpyxl.utils import get_column_letter
 from io import BytesIO
 from datetime import datetime
+from django.contrib.auth.decorators import login_required
 from .models import SatinAlma
 from .forms import SatinAlmaForm
 from faturalar.models import Fatura
 from tedarikciler.models import Tedarikci
 from urunler.models import Urun
 from departmanlar.models import Departman
+import json
 
 def export_to_excel(satin_almalar):
     wb = Workbook()
@@ -95,6 +97,7 @@ def export_to_excel(satin_almalar):
     excel_file.seek(0)
     return excel_file
 
+@login_required
 def satin_alma_listesi(request):
     # Filtreleme parametrelerini al
     tedarikci_id = request.GET.get('tedarikci')
@@ -184,26 +187,29 @@ def satin_alma_listesi(request):
     
     return render(request, 'satin_alma/satin_alma_listesi.html', context)
 
+@login_required
 def satin_alma_detay(request, pk):
     satin_alma = get_object_or_404(SatinAlma, pk=pk)
     if request.method == "POST" and request.FILES.get("fis"):
         satin_alma.fis = request.FILES["fis"]
         satin_alma.save()
         messages.success(request, 'Fiş başarıyla yüklendi/değiştirildi.')
-        return redirect('satin_alma:satin_alma_detay', pk=pk)
-    return render(request, 'satin_alma/satin_alma_detay.html', {'satin_alma': satin_alma})
+        return redirect('satinalma:satin_alma_detay', pk=pk)
+    return render(request, 'satin_alma_detay.html', {'satin_alma': satin_alma})
 
+@login_required
 def satin_alma_ekle(request):
     if request.method == "POST":
         form = SatinAlmaForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, 'Satın alma başarıyla eklendi.')
-            return redirect('satin_alma:satin_alma_listesi')
+            return redirect('satinalma:satin_alma_listesi')
     else:
         form = SatinAlmaForm()
-    return render(request, 'satin_alma/satin_alma_form.html', {'form': form})
+    return render(request, 'satin_alma_form.html', {'form': form})
 
+@login_required
 def satin_alma_duzenle(request, pk):
     satin_alma = get_object_or_404(SatinAlma, pk=pk)
     if request.method == "POST":
@@ -211,19 +217,21 @@ def satin_alma_duzenle(request, pk):
         if form.is_valid():
             form.save()
             messages.success(request, 'Satın alma başarıyla güncellendi.')
-            return redirect('satin_alma:satin_alma_listesi')
+            return redirect('satinalma:satin_alma_detay', pk=pk)
     else:
         form = SatinAlmaForm(instance=satin_alma)
-    return render(request, 'satin_alma/satin_alma_form.html', {'form': form})
+    return render(request, 'satin_alma_form.html', {'form': form})
 
+@login_required
 def satin_alma_sil(request, pk):
     satin_alma = get_object_or_404(SatinAlma, pk=pk)
     if request.method == "POST":
         satin_alma.delete()
         messages.success(request, 'Satın alma başarıyla silindi.')
-        return redirect('satin_alma:satin_alma_listesi')
-    return render(request, 'satin_alma/satin_alma_sil.html', {'satin_alma': satin_alma})
+        return redirect('satinalma:satin_alma_listesi')
+    return render(request, 'satin_alma_sil.html', {'satin_alma': satin_alma})
 
+@login_required
 def dashboard(request):
     # Son 30 günün tarihi
     son_30_gun = timezone.now() - timedelta(days=30)
@@ -376,10 +384,10 @@ def dashboard(request):
 
     context = {
         'genel_istatistikler': genel_istatistikler,
-        'aylik_trend': aylik_trend,
-        'tedarikci_dagilimi': tedarikci_dagilimi,
-        'departman_dagilimi': departman_dagilimi,
-        'populer_urunler': populer_urunler,
+        'aylik_trend': json.dumps(aylik_trend, ensure_ascii=False, default=str),
+        'tedarikci_dagilimi': json.dumps(tedarikci_dagilimi, ensure_ascii=False, default=str),
+        'departman_dagilimi': json.dumps(departman_dagilimi, ensure_ascii=False, default=str),
+        'populer_urunler': json.dumps(populer_urunler, ensure_ascii=False, default=str),
         'son_satinalmalar': son_satinalmalar,
         'son_faturalar': son_faturalar,
         'bekleyen_odemeler': bekleyen_odemeler,
@@ -388,4 +396,4 @@ def dashboard(request):
         'departmanlar_toplam': departmanlar_toplam,
     }
     
-    return render(request, 'satin_alma/dashboard.html', context) 
+    return render(request, 'dashboard.html', context) 

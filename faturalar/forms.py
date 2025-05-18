@@ -1,7 +1,7 @@
 from django import forms
 from .models import Fatura
-from satin_alma.models import SatinAlma
-from satin_alma.models import Tedarikci
+from satinalma.models import SatinAlma
+from tedarikciler.models import Tedarikci
 
 class FaturaForm(forms.ModelForm):
     satinalmalar = forms.ModelMultipleChoiceField(
